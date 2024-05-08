@@ -8,7 +8,7 @@ import (
 	"github.com/hahahannes/e2e-go-utils/lib/streaming"
 )
 
-func NewConsumer(ctx context.Context, kafkaUrl string, topic string, messageChannel chan streaming.Message) (err error) {
+func NewConsumer(ctx context.Context, kafkaUrl string, topic string, messageChannel chan streaming.Message) {
 	r := kafka.NewReader(kafka.ReaderConfig{
 		CommitInterval:         0, //synchronous commits
 		Brokers:                []string{kafkaUrl},
@@ -38,5 +38,4 @@ func NewConsumer(ctx context.Context, kafkaUrl string, topic string, messageChan
 			}
 		}
 	}()
-	return err
 }

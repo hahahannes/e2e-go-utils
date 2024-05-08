@@ -22,7 +22,8 @@ func WaitForMessageOnTopicReceived(regexTopic, regexMsg string, sendFnc func() e
 	resultChannel := make(chan lib.MessageReceived)
 
 	timeoutCtx, cancel := context.WithTimeout(context.Background(), timeout)
-
+	defer cancel()
+	
 	go func() {
 		fmt.Println("Start waiting for messages on: " + regexTopic)
 		for {
