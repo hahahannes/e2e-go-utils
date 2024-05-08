@@ -22,15 +22,17 @@ type MQTTClient struct {
 	Host string
 	Port string
 	TopicConfig TopicConfig
+	SubscribeInitial bool
 }
 
-func NewMQTTClient(host, port string, topicConfig TopicConfig, msgChannel chan streaming.Message) *MQTTClient {
+func NewMQTTClient(host, port string, topicConfig TopicConfig, msgChannel chan streaming.Message, subscribeInitial bool) *MQTTClient {
 	return &MQTTClient{
 		Host: host,
 		Port: port,
 		TopicConfig: topicConfig,
 		MsgChannel: msgChannel,
 		OnConnectHandler: func(MQTT.Client) {},
+		SubscribeInitial: subscribeInitial,
 	}
 }
 
@@ -94,7 +96,10 @@ func (client *MQTTClient) ConnectMQTTBroker(username, password *string) error {
 			time.Sleep(5 * time.Second)
 		} else {
 			fmt.Printf("Connected to %s\n", server)
-			return client.InitialSubscribe()
+			if client.SubscribeInitial {
+				return client.InitialSubscribe()
+			}
+			return nil
 		}
 		loopCounter += 1
 	}

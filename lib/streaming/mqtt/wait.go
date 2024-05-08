@@ -11,7 +11,7 @@ func WaitForMQTTMessageReceived(regexTopic, regexMsg string, sendFnc func() erro
 	topicConfig := map[string]byte{
 		"#": byte(2),
 	}
-	client := NewMQTTClient(host, port, topicConfig, msgChannel)
+	client := NewMQTTClient(host, port, topicConfig, msgChannel, true)
 	client.ConnectMQTTBroker(nil, nil)
 	defer client.CloseConnection()
 	result, err := streaming.WaitForMessageOnTopicReceived(regexTopic, regexMsg, sendFnc, msgChannel, timeout)
