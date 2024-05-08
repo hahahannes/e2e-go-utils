@@ -34,7 +34,7 @@ func NewMQTTClient(host, port string, topicConfig TopicConfig, msgChannel chan s
 	}
 }
 
-func (client *MQTTClient) ConnectMQTTBroker(username, password *string) {
+func (client *MQTTClient) ConnectMQTTBroker(username, password *string) error {
 	//MQTT.DEBUG = log.New(os.Stdout, "", 0)
 
 	hostname, _ := os.Hostname()
@@ -75,24 +75,18 @@ func (client *MQTTClient) ConnectMQTTBroker(username, password *string) {
 	connOpts.SetTLSConfig(tlsConfig)
 
 	connOpts.OnConnect = func(c MQTT.Client) {
-		if(len(client.TopicConfig) != 0) {
-			fmt.Printf("Subscribed to topics: %v", client.TopicConfig)
-			if token := c.SubscribeMultiple(client.TopicConfig, client.OnMessageReceived); token.Wait() && token.Error() != nil {
-				panic(token.Error())
-			}
-			fmt.Println("Call connect handler")
-			client.OnConnectHandler(c)
-		}
+		fmt.Println("Call connect handler")
+		client.OnConnectHandler(c)
 	}
 	
 	client.Client = MQTT.NewClient(connOpts)
 
 	loopCounter := 0
 	for {
-		fmt.Println("Try to connect to: %s [%d/240]", server, loopCounter)
+		fmt.Printf("Try to connect to: %s [%d/240]", server, loopCounter)
 
 		if loopCounter > 240 {
-			panic("Could not connect with broker")
+			return errors.New("Could not connect with broker")
 		}
 
 		if token := client.Client.Connect(); token.Wait() && token.Error() != nil {
@@ -100,11 +94,22 @@ func (client *MQTTClient) ConnectMQTTBroker(username, password *string) {
 			time.Sleep(5 * time.Second)
 		} else {
 			fmt.Printf("Connected to %s\n", server)
-			break
+			return client.InitialSubscribe()
 		}
 		loopCounter += 1
 	}
+}
 
+func (client *MQTTClient) InitialSubscribe() error {
+	if(len(client.TopicConfig) == 0) {
+		return errors.New("No topics configured")
+	}
+
+	fmt.Printf("Subscribed to topics: %v", client.TopicConfig)
+	if token := client.Client.SubscribeMultiple(client.TopicConfig, client.OnMessageReceived); token.Wait() && token.Error() != nil {
+		return token.Error()
+	}
+	return nil
 }
 
 func (client *MQTTClient) CloseConnection() {
