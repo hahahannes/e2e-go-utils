@@ -44,7 +44,7 @@ func WaitForMessageReceived[T any] (ctx context.Context, sendFnc func() error, m
 
 	err := sendFnc()
 	if err != nil {
-		fmt.Printf("Error occured during setup: " + err.Error())
+		fmt.Printf("Error occured during send: " + err.Error())
 		cancel()
 		return messageReceived, err
 	}
@@ -54,8 +54,8 @@ func WaitForMessageReceived[T any] (ctx context.Context, sendFnc func() error, m
 
 }
 
-func WaitForStringReceived(regexMsg string, sendFnc func() error, channel chan string) (MessageReceived, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 60 * time.Second)
+func WaitForStringReceived(regexMsg string, sendFnc func() error, channel chan string, timeout time.Duration) (MessageReceived, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 	return WaitForMessageReceived[string](ctx, sendFnc, channel, func (log any) (error, bool) {
 		msgMatch, err := regexp.MatchString(regexMsg, log.(string))
