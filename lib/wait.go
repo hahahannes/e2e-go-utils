@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"time"
+	"regexp"
 )
 
 func WaitForMessageReceived[T any] (ctx context.Context, sendFnc func() error, messageChannel chan T, matchFnc func(msg interface{}) (error, bool)) (MessageReceived, error) {
@@ -53,13 +54,11 @@ func WaitForMessageReceived[T any] (ctx context.Context, sendFnc func() error, m
 
 }
 
-func WaitForStringReceived(expectedMsg string, sendFnc func() error, channel chan string) (MessageReceived, error) {
+func WaitForStringReceived(regexMsg string, sendFnc func() error, channel chan string) (MessageReceived, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60 * time.Second)
 	defer cancel()
-	return WaitForMessageReceived[string](ctx, sendFnc, channel, func (msg any) (error, bool) {
-		if msg == expectedMsg {
-			return nil, true
-		}
-		return nil, false
+	return WaitForMessageReceived[string](ctx, sendFnc, channel, func (log any) (error, bool) {
+		msgMatch, err := regexp.MatchString(regexMsg, log.(string))
+		return err, msgMatch
 	})
 }
