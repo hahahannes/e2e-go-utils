@@ -7,7 +7,7 @@ import (
 	"regexp"
 )
 
-func WaitForMessageReceived[T any] (ctx context.Context, sendFnc func(context.Context) error, messageChannel chan T, matchFnc func(msg interface{}) (error, bool)) (MessageReceived, error) {
+func WaitForMessageReceived[T any] (ctx context.Context, sendFnc func(context.Context) error, messageChannel chan T, matchFnc func(msg interface{}) (error, bool), logMessages bool) (MessageReceived, error) {
 	// Start listening on the message channgel where incoming MQTT messages will land
 	// then start command which will eventually lead to a message published
 
@@ -20,9 +20,13 @@ func WaitForMessageReceived[T any] (ctx context.Context, sendFnc func(context.Co
 		for {
 			select {
 			case msg := <- messageChannel:
-				fmt.Println(msg)
+				if logMessages {
+					fmt.Println(msg)
+				}
 				err, matched := matchFnc(msg)
-				fmt.Println(matched)
+				if logMessages {
+					fmt.Println(matched)
+				}
 				if err != nil {
 					return
 				}
@@ -58,11 +62,11 @@ func WaitForMessageReceived[T any] (ctx context.Context, sendFnc func(context.Co
 	return messageReceived, nil
 }
 
-func WaitForStringReceived(regexMsg string, sendFnc func(context.Context) error, channel chan string, timeout time.Duration) (MessageReceived, error) {
+func WaitForStringReceived(regexMsg string, sendFnc func(context.Context) error, channel chan string, timeout time.Duration, logMessages bool) (MessageReceived, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 	return WaitForMessageReceived[string](ctx, sendFnc, channel, func (log any) (error, bool) {
 		msgMatch, err := regexp.MatchString(regexMsg, log.(string))
 		return err, msgMatch
-	})
+	}, logMessages)
 }

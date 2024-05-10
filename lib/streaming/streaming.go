@@ -23,10 +23,15 @@ func WaitForMessageOnTopicReceived(regexTopic, regexMsg string, sendFnc func(con
 	return lib.WaitForMessageReceived(ctx, sendFnc, messageChannel, func (msg any) (error, bool) {
 		value := msg.(Message).Value
 		topic := msg.(Message).Topic
-		fmt.Println(topic + " - " + value)
-		msgMatch, _ := regexp.MatchString(regexMsg, value)
-		topicMatch, _ := regexp.MatchString(regexTopic, topic)
-
+		msgMatch, err := regexp.MatchString(regexMsg, value)
+		if err != nil {
+			return err, false
+		}
+		topicMatch, err := regexp.MatchString(regexTopic, topic)
+		if err != nil {
+			return err, false
+		}
+		
 		if msgMatch && topicMatch {
 			return nil, true
 		}
