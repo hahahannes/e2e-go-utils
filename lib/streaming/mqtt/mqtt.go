@@ -9,6 +9,7 @@ import (
 	"net/url"	
 	"fmt"
 	"crypto/tls"
+	"math/rand"
 	"github.com/hahahannes/e2e-go-utils/lib/streaming"
 )
 
@@ -44,7 +45,7 @@ func (client *MQTTClient) ConnectMQTTBroker(username, password *string) error {
 	server := "tcp://"+client.Host+":"+client.Port
 	retained := false
 	client.Retained = &retained
-	clientId := hostname+strconv.Itoa(time.Now().Second())
+	clientId := hostname+strconv.Itoa(rand.Int())
 
 	connOpts := MQTT.NewClientOptions().
 		AddBroker(server).
