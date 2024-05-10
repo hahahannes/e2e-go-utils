@@ -12,11 +12,14 @@ func WaitForMessageReceived[T any] (ctx context.Context, sendFnc func() error, m
 
 	resultChannel := make(chan MessageReceived)
 	var messageReceived MessageReceived 
-	
+	subCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	go func() {
 		for {
 			select {
 			case msg := <- messageChannel:
+				fmt.Println(msg)
 				err, matched := matchFnc(msg)
 				if err != nil {
 					return
@@ -29,7 +32,7 @@ func WaitForMessageReceived[T any] (ctx context.Context, sendFnc func() error, m
 					}
 					return
 				}
-			case <- ctx.Done(): 
+			case <- subCtx.Done(): 
 				resultChannel <- MessageReceived{
 					Received: false,
 				}
@@ -41,13 +44,11 @@ func WaitForMessageReceived[T any] (ctx context.Context, sendFnc func() error, m
 	err := sendFnc()
 	if err != nil {
 		fmt.Printf("Error occured during setup: " + err.Error())
+		cancel()
+		return messageReceived, err
 	}
 
 	messageReceived = <- resultChannel
-
-	if err != nil {
-		return messageReceived, err
-	}
 	return messageReceived, nil
 
 }
