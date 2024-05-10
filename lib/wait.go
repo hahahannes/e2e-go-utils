@@ -22,6 +22,7 @@ func WaitForMessageReceived[T any] (ctx context.Context, sendFnc func() error, m
 			case msg := <- messageChannel:
 				fmt.Println(msg)
 				err, matched := matchFnc(msg)
+				fmt.Println(matched)
 				if err != nil {
 					return
 				}
@@ -50,6 +51,7 @@ func WaitForMessageReceived[T any] (ctx context.Context, sendFnc func() error, m
 	}
 
 	messageReceived = <- resultChannel
+	fmt.Println(messageReceived)
 	return messageReceived, nil
 
 }
@@ -59,7 +61,6 @@ func WaitForStringReceived(regexMsg string, sendFnc func() error, channel chan s
 	defer cancel()
 	return WaitForMessageReceived[string](ctx, sendFnc, channel, func (log any) (error, bool) {
 		msgMatch, err := regexp.MatchString(regexMsg, log.(string))
-		fmt.Println(fmt.Sprintf("Msg: %s, %t", log, msgMatch))
 		return err, msgMatch
 	})
 }
