@@ -77,15 +77,14 @@ func (client *MQTTClient) ConnectMQTTBroker(username, password *string) error {
 	connOpts.SetTLSConfig(tlsConfig)
 
 	connOpts.OnConnect = func(c MQTT.Client) {
-		fmt.Println("Call connect handler")
-		client.OnConnectHandler(c)
+		fmt.Println("Connected to " + server)
 	}
 	
 	client.Client = MQTT.NewClient(connOpts)
 
 	loopCounter := 0
 	for {
-		fmt.Printf("Try to connect to: %s [%d/240]", server, loopCounter)
+		fmt.Printf(fmt.Sprintf("Try to connect to: %s [%d/240]", server, loopCounter))
 
 		if loopCounter > 240 {
 			return errors.New("Could not connect with broker")

@@ -19,7 +19,7 @@ func (c LogConsumer) Accept(rawLog testcontainers.Log) {
 	c.LogChannel <- log
 }
 
-func startLoggingAndSend(ctx context.Context, logChannel chan string, container testcontainers.Container, sendFnc func() error) error {
+func startLoggingAndSend(ctx context.Context, logChannel chan string, container testcontainers.Container, sendFnc func(context.Context) error) error {
 	logConsumer := LogConsumer{
 		LogChannel: logChannel,
 	}
@@ -30,16 +30,16 @@ func startLoggingAndSend(ctx context.Context, logChannel chan string, container 
 	if err != nil {
 		return err
 	}
-	err = sendFnc()
+	err = sendFnc(ctx)
 	return err
 }
 
-func WaitForContainerLog(regexMsg string, sendFnc func() error, container testcontainers.Container) (lib.MessageReceived, error) {
+func WaitForContainerLog(regexMsg string, sendFnc func(context.Context) error, container testcontainers.Container) (lib.MessageReceived, error) {
 	logChannel := make(chan string)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 60 * time.Second)
 	defer cancel()
-	return lib.WaitForMessageReceived[string](ctx, func() error {
+	return lib.WaitForMessageReceived[string](ctx, func(context.Context) error {
 		return startLoggingAndSend(ctx, logChannel, container, sendFnc)
 	}, logChannel, func (log any) (error, bool) {
 		msgMatch, err := regexp.MatchString(regexMsg, log.(string))
