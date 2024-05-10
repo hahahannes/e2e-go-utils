@@ -22,5 +22,5 @@ func CheckConditionWithRetry(funcCondition func() bool, numberRetries int, timeo
 
 type MessageReceived struct {
 	Received bool
-	Message string
+	Message interface{}
 }
