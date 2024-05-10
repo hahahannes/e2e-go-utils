@@ -34,7 +34,7 @@ func startLoggingAndSend(ctx context.Context, logChannel chan string, container 
 	return err
 }
 
-func WaitForContainerLog(regexMsg string, sendFnc func(context.Context) error, container testcontainers.Container) (lib.MessageReceived, error) {
+func WaitForContainerLog(regexMsg string, sendFnc func(context.Context) error, container testcontainers.Container, logMessages bool) (lib.MessageReceived, error) {
 	logChannel := make(chan string)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 60 * time.Second)
@@ -44,5 +44,5 @@ func WaitForContainerLog(regexMsg string, sendFnc func(context.Context) error, c
 	}, logChannel, func (log any) (error, bool) {
 		msgMatch, err := regexp.MatchString(regexMsg, log.(string))
 		return err, msgMatch
-	})
+	}, logMessages)
 }
