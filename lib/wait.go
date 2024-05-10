@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func WaitForMessageReceived(ctx context.Context, sendFnc func() error, messageChannel any, matchFnc func(msg interface{}) (error, bool)) (MessageReceived, error) {
+func WaitForMessageReceived[T any] (ctx context.Context, sendFnc func() error, messageChannel chan T, matchFnc func(msg interface{}) (error, bool)) (MessageReceived, error) {
 	// Start listening on the message channgel where incoming MQTT messages will land
 	// then start command which will eventually lead to a message published
 
@@ -16,7 +16,7 @@ func WaitForMessageReceived(ctx context.Context, sendFnc func() error, messageCh
 	go func() {
 		for {
 			select {
-			case msg := <- messageChannel.(chan any):
+			case msg := <- messageChannel:
 				err, matched := matchFnc(msg)
 				if err != nil {
 					return
@@ -55,7 +55,7 @@ func WaitForMessageReceived(ctx context.Context, sendFnc func() error, messageCh
 func WaitForStringReceived(expectedMsg string, sendFnc func() error, channel chan string) (MessageReceived, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60 * time.Second)
 	defer cancel()
-	return WaitForMessageReceived(ctx, sendFnc, channel, func (msg any) (error, bool) {
+	return WaitForMessageReceived[string](ctx, sendFnc, channel, func (msg any) (error, bool) {
 		if msg == expectedMsg {
 			return nil, true
 		}

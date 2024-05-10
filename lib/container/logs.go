@@ -39,7 +39,7 @@ func WaitForContainerLog(regexMsg string, sendFnc func() error, container testco
 
 	ctx, cancel := context.WithTimeout(context.Background(), 60 * time.Second)
 	defer cancel()
-	return lib.WaitForMessageReceived(ctx, func() error {
+	return lib.WaitForMessageReceived[string](ctx, func() error {
 		return startLoggingAndSend(ctx, logChannel, container, sendFnc)
 	}, logChannel, func (log any) (error, bool) {
 		msgMatch, err := regexp.MatchString(regexMsg, log.(string))
