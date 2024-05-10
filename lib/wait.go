@@ -7,7 +7,7 @@ import (
 	"regexp"
 )
 
-func WaitForMessageReceived[T any] (ctx context.Context, sendFnc func() error, messageChannel chan T, matchFnc func(msg interface{}) (error, bool)) (MessageReceived, error) {
+func WaitForMessageReceived[T any] (ctx context.Context, sendFnc func(context.Context) error, messageChannel chan T, matchFnc func(msg interface{}) (error, bool)) (MessageReceived, error) {
 	// Start listening on the message channgel where incoming MQTT messages will land
 	// then start command which will eventually lead to a message published
 
@@ -43,20 +43,22 @@ func WaitForMessageReceived[T any] (ctx context.Context, sendFnc func() error, m
 		}
 	}()
 
-	err := sendFnc()
-	if err != nil {
-		fmt.Printf("Error occured during send: " + err.Error())
-		cancel()
-		return messageReceived, err
-	}
+
+	go func() {
+		// Send async, could be an application running
+		err := sendFnc(ctx)
+		if err != nil {
+			fmt.Printf("Error occured during send: " + err.Error())
+			cancel()
+		}
+	}()
 
 	messageReceived = <- resultChannel
 	fmt.Println(messageReceived)
 	return messageReceived, nil
-
 }
 
-func WaitForStringReceived(regexMsg string, sendFnc func() error, channel chan string, timeout time.Duration) (MessageReceived, error) {
+func WaitForStringReceived(regexMsg string, sendFnc func(context.Context) error, channel chan string, timeout time.Duration) (MessageReceived, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 	return WaitForMessageReceived[string](ctx, sendFnc, channel, func (log any) (error, bool) {
