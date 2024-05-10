@@ -14,54 +14,22 @@ type Message struct {
 	Topic string
 }
 
-func WaitForMessageOnTopicReceived(regexTopic, regexMsg string, sendFnc func() error, messageChannel chan Message, timeout time.Duration) (lib.MessageReceived, error) {
+func WaitForMessageOnTopicReceived(regexTopic, regexMsg string, sendFnc func(context.Context) error, messageChannel chan Message, timeout time.Duration) (lib.MessageReceived, error) {
 	// Start listening on the message channgel where incoming MQTT messages will land
 	// then start command which will eventually lead to a message published
-
-	var messageReceived lib.MessageReceived 
-	resultChannel := make(chan lib.MessageReceived)
-
-	timeoutCtx, cancel := context.WithTimeout(context.Background(), timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
-	
-	go func() {
-		fmt.Println("Start waiting for messages on: " + regexTopic)
-		for {
-			select {
-			case msg := <- messageChannel:
-				value := msg.Value
-				topic := msg.Topic
-				fmt.Println(topic + " - " + value)
-				msgMatch, _ := regexp.MatchString(regexMsg, value)
-				topicMatch, _ := regexp.MatchString(regexTopic, topic)
 
-				if msgMatch && topicMatch {
-					resultChannel <- lib.MessageReceived{
-						Received: true,
-						Message: value,
-					}
-					return
-				}
-			case <- timeoutCtx.Done(): 
-				resultChannel <- lib.MessageReceived{
-					Received: false,
-				}
-				return
-			}		
+	return lib.WaitForMessageReceived(ctx, sendFnc, messageChannel, func (msg any) (error, bool) {
+		value := msg.(Message).Value
+		topic := msg.(Message).Topic
+		fmt.Println(topic + " - " + value)
+		msgMatch, _ := regexp.MatchString(regexMsg, value)
+		topicMatch, _ := regexp.MatchString(regexTopic, topic)
+
+		if msgMatch && topicMatch {
+			return nil, true
 		}
-	}()
-
-	err := sendFnc()
-	if err != nil {
-		fmt.Printf("Error occured during setup: " + err.Error())
-		cancel()
-	}
-
-	messageReceived = <- resultChannel
-
-	if err != nil {
-		return messageReceived, err
-	}
-	return messageReceived, nil
-
+		return nil, false
+	})
 }
