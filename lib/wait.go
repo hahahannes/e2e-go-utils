@@ -52,8 +52,7 @@ func WaitForMessageReceived(ctx context.Context, sendFnc func() error, messageCh
 
 }
 
-func WaitForStringReceived(expectedMsg string, sendFnc func() error) (MessageReceived, error) {
-	channel := make(chan string)
+func WaitForStringReceived(expectedMsg string, sendFnc func() error, channel chan string) (MessageReceived, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60 * time.Second)
 	defer cancel()
 	return WaitForMessageReceived(ctx, sendFnc, channel, func (msg any) (error, bool) {
