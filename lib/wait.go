@@ -28,7 +28,10 @@ func WaitForMessageReceived[T any] (ctx context.Context, sendFnc func(context.Co
 					fmt.Println(matched)
 				}
 				if err != nil {
-					return
+					resultChannel <- MessageReceived{
+						Received: false,
+						Error: err,
+					}
 				}
 
 				if matched {
@@ -53,12 +56,16 @@ func WaitForMessageReceived[T any] (ctx context.Context, sendFnc func(context.Co
 		err := sendFnc(ctx)
 		if err != nil {
 			fmt.Printf("Error occured during send: " + err.Error())
+			resultChannel <- MessageReceived{
+				Received: false,
+				Error: err,
+			}
 			cancel()
 		}
 	}()
 
 	messageReceived = <- resultChannel
-	fmt.Println(messageReceived)
+	fmt.Printf("Received message: %+v", messageReceived)
 	return messageReceived, nil
 }
 
