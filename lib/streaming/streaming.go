@@ -17,6 +17,7 @@ func WaitForMessageOnTopicReceived(regexTopic, regexMsg string, sendFnc func(con
 	// Start listening on the message channgel where incoming MQTT messages will land
 	// then start command which will eventually lead to a message published
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	// TODO: ctx as parameter and with timeout in lib waitformessegereceived
 	defer cancel()
 
 	return lib.WaitForMessageReceived(ctx, sendFnc, messageChannel, func (msg any) (error, bool) {

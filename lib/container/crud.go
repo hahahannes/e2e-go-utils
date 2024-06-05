@@ -2,7 +2,7 @@ package container
 
 import (
 	"context"
-	types "github.com/docker/docker/api/types"
+	dockerContainerTypes "github.com/docker/docker/api/types/container"
 	docker "github.com/docker/docker/client"	
 	"github.com/hahahannes/e2e-go-utils/lib"
 )
@@ -16,7 +16,7 @@ func ContainerExists(containerID string, ctx context.Context) bool {
 			panic(err)
 		}
 	
-		containers, err := cli.ContainerList(ctx, types.ContainerListOptions{
+		containers, err := cli.ContainerList(ctx, dockerContainerTypes.ListOptions{
 			All: true,
 		})
 
@@ -45,7 +45,7 @@ func ContainerIsRemoved(containerID string, ctx context.Context) bool {
 			panic(err)
 		}
 	
-		containers, err := cli.ContainerList(ctx, types.ContainerListOptions{
+		containers, err := cli.ContainerList(ctx, dockerContainerTypes.ListOptions{
 			All: true,
 		})
 
