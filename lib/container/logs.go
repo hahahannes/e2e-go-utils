@@ -19,6 +19,12 @@ func (c LogConsumer) Accept(rawLog testcontainers.Log) {
 	c.LogChannel <- log
 }
 
+func NewLogConsumer() *LogConsumer {
+	return &LogConsumer{
+		LogChannel: make(chan string),
+	}
+}
+
 func startLoggingAndSend(ctx context.Context, logChannel chan string, container testcontainers.Container, sendFnc func(context.Context) error) error {
 	logConsumer := LogConsumer{
 		LogChannel: logChannel,
