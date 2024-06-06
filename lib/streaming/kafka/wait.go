@@ -10,7 +10,7 @@ import (
 
 func WaitForKafkaMessageReceived(topic, regexMsg string, sendFnc func(context.Context) error, timeout time.Duration, host, port string, logMessages bool) (lib.MessageReceived, error) {
 	msgChannel := make(chan streaming.Message)
-	url := "http://" + host + ":" + port
+	url := host + ":" + port
 	ctx, cancel := context.WithCancel(context.Background())
 	NewConsumer(ctx, url, topic, msgChannel)
 	defer cancel()
