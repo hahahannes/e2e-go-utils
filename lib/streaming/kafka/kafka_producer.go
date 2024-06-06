@@ -33,13 +33,10 @@ func (producer *Producer) Produce(topic, message, key string) error {
 	for i := 0; i < retries; i++ {
 		ctx, cancel := context.WithTimeout(producer.Context, 10*time.Second)
 		defer cancel()
-		err := writer.WriteMessages(ctx, kafka.Message{
+		err = writer.WriteMessages(ctx, kafka.Message{
 			Key: []byte(key),
 			Value: []byte(message),
 		})
-		if err != nil {
-			return err 
-		}
 
 		time.Sleep(time.Millisecond * 250)
 		continue
