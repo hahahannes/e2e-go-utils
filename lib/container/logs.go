@@ -2,7 +2,6 @@ package container
 
 import (
 	"context"
-	"fmt"
 	"regexp"
 	"time"
 
@@ -25,29 +24,12 @@ func NewLogConsumer() *LogConsumer {
 	}
 }
 
-func startLoggingAndSend(ctx context.Context, logChannel chan string, container testcontainers.Container, sendFnc func(context.Context) error) error {
-	logConsumer := LogConsumer{
-		LogChannel: logChannel,
-	}
-	// Call FollowOutput after goroutine, so that there exist a receiver for the log channel 
-	fmt.Println("Set Log Follower at container")
-	container.FollowOutput(logConsumer)
-	err := container.StartLogProducer(ctx)
-	if err != nil {
-		return err
-	}
-	err = sendFnc(ctx)
-	return err
-}
-
-func WaitForContainerLog(regexMsg string, sendFnc func(context.Context) error, container testcontainers.Container, logMessages bool) (lib.MessageReceived, error) {
-	logChannel := make(chan string)
-
+func WaitForContainerLog(regexMsg string, sendFnc func(context.Context) error, logConsumer *LogConsumer, logMessages bool) (lib.MessageReceived, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60 * time.Second)
 	defer cancel()
 	return lib.WaitForMessageReceived[string](ctx, func(context.Context) error {
-		return startLoggingAndSend(ctx, logChannel, container, sendFnc)
-	}, logChannel, func (log any) (error, bool) {
+		return sendFnc(ctx)
+	}, logConsumer.LogChannel, func (log any) (error, bool) {
 		msgMatch, err := regexp.MatchString(regexMsg, log.(string))
 		return err, msgMatch
 	}, logMessages)
