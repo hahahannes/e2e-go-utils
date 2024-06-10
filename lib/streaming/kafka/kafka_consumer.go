@@ -15,6 +15,7 @@ func NewConsumer(ctx context.Context, kafkaUrl string, topic string, messageChan
 		Brokers:                []string{kafkaUrl},
 		Topic:                  topic,
 	})
+	r.SetOffset(kafka.LastOffset)
 	go func() {
 		for {
 			select {
