@@ -22,7 +22,6 @@ func (producer *Producer) Produce(topic, message, key string) error {
 	writer := kafka.Writer{
 		Addr:     kafka.TCP(producer.KafkaUrl),
 		Topic:   topic,
-		Balancer: &kafka.LeastBytes{},
 		AllowAutoTopicCreation: true,
 	}
 

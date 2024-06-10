@@ -2,15 +2,16 @@ package kafka
 
 import (
 	"context"
-	"github.com/segmentio/kafka-go"
+	"fmt"
 	"io"
 	"log"
+
 	"github.com/hahahannes/e2e-go-utils/lib/streaming"
+	"github.com/segmentio/kafka-go"
 )
 
 func NewConsumer(ctx context.Context, kafkaUrl string, topic string, messageChannel chan streaming.Message) {
 	r := kafka.NewReader(kafka.ReaderConfig{
-		CommitInterval:         0, //synchronous commits
 		Brokers:                []string{kafkaUrl},
 		Topic:                  topic,
 	})
@@ -18,10 +19,13 @@ func NewConsumer(ctx context.Context, kafkaUrl string, topic string, messageChan
 		for {
 			select {
 			case <-ctx.Done():
-				log.Println("close kafka reader ")
+				log.Println("close kafka reader")
+				if err := r.Close(); err != nil {
+					log.Fatal("failed to close reader:", err)
+				}
 				return
 			default:
-				m, err := r.FetchMessage(ctx)
+				m, err := r.ReadMessage(ctx)
 				if err == io.EOF || err == context.Canceled {
 					log.Println("close consumer for topic ")
 					return
@@ -30,10 +34,11 @@ func NewConsumer(ctx context.Context, kafkaUrl string, topic string, messageChan
 					log.Println("ERROR: while consuming topic ", err)
 					return
 				}
-				
+				msg := string(m.Value)
+				log.Println(fmt.Sprintf("Received %s on Topic: %s", msg, m.Topic))
 				messageChannel <- streaming.Message{
 					Topic: m.Topic,
-					Value: string(m.Value),
+					Value: msg,
 				}
 			}
 		}
