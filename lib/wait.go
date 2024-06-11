@@ -53,18 +53,19 @@ func WaitForMessageReceived[T any] (ctx context.Context, sendFnc func(context.Co
 
 	go func() {
 		// Send async, could be an application running
-		fmt.Println("Send()")
+		fmt.Println("Start Func")
 		err := sendFnc(ctx)
 		if err != nil {
-			fmt.Printf("Error occured during send: " + err.Error())
+			fmt.Println("Error occured Func: " + err.Error())
 			resultChannel <- MessageReceived{
 				Received: false,
 				Message: "sendFnc errored",
 				Error: err,
 			}
 			cancel()
+			return
 		}
-		fmt.Println("Send() done")
+		fmt.Println("Func was executed successfully")
 	}()
 
 	messageReceived = <- resultChannel
