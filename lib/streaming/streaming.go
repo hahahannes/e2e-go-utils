@@ -2,7 +2,6 @@ package streaming
 
 import (
 	"context"
-	"time"
 	"regexp"
 	"github.com/hahahannes/e2e-go-utils/lib"
 )
@@ -13,7 +12,7 @@ type Message struct {
 	Topic string
 }
 
-func WaitForMessageOnTopicReceived(ctx context.Context, regexTopic, regexMsg string, sendFnc func(context.Context) error, messageChannel chan Message, timeout time.Duration, logMessages bool) (lib.MessageReceived, error) {
+func WaitForMessageOnTopicReceived(ctx context.Context, regexTopic, regexMsg string, sendFnc func(context.Context) error, messageChannel chan Message, logMessages bool) (lib.MessageReceived, error) {
 	// Start listening on the message channgel where incoming MQTT messages will land
 	// then start command which will eventually lead to a message published
 
