@@ -3,7 +3,6 @@ package container
 import (
 	"context"
 	"regexp"
-	"time"
 
 	"github.com/hahahannes/e2e-go-utils/lib"
 	"github.com/testcontainers/testcontainers-go"
@@ -24,9 +23,7 @@ func NewLogConsumer() *LogConsumer {
 	}
 }
 
-func WaitForContainerLog(regexMsg string, sendFnc func(context.Context) error, logConsumer *LogConsumer, logMessages bool) (lib.MessageReceived, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 60 * time.Second)
-	defer cancel()
+func WaitForContainerLog(ctx context.Context, regexMsg string, sendFnc func(context.Context) error, logConsumer *LogConsumer, logMessages bool) (lib.MessageReceived, error) {
 	return lib.WaitForMessageReceived[string](ctx, func(context.Context) error {
 		return sendFnc(ctx)
 	}, logConsumer.LogChannel, func (log any) (error, bool) {

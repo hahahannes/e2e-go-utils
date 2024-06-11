@@ -13,12 +13,9 @@ type Message struct {
 	Topic string
 }
 
-func WaitForMessageOnTopicReceived(regexTopic, regexMsg string, sendFnc func(context.Context) error, messageChannel chan Message, timeout time.Duration, logMessages bool) (lib.MessageReceived, error) {
+func WaitForMessageOnTopicReceived(ctx context.Context, regexTopic, regexMsg string, sendFnc func(context.Context) error, messageChannel chan Message, timeout time.Duration, logMessages bool) (lib.MessageReceived, error) {
 	// Start listening on the message channgel where incoming MQTT messages will land
 	// then start command which will eventually lead to a message published
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	// TODO: ctx as parameter and with timeout in lib waitformessegereceived
-	defer cancel()
 
 	return lib.WaitForMessageReceived(ctx, sendFnc, messageChannel, func (msg any) (error, bool) {
 		value := msg.(Message).Value
