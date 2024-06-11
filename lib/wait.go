@@ -44,6 +44,7 @@ func WaitForMessageReceived[T any] (ctx context.Context, sendFnc func(context.Co
 			case <- subCtx.Done(): 
 				resultChannel <- MessageReceived{
 					Received: false,
+					Error: subCtx.Err(),
 				}
 				return
 			}		
