@@ -7,18 +7,16 @@ import (
 )
 
 type Producer struct {
-	Context context.Context
 	KafkaUrl string
 }
 
-func NewKafkaProducer(ctx context.Context, kafkaUrl string) (producer *Producer) {
+func NewKafkaProducer(kafkaUrl string) (producer *Producer) {
 	return &Producer{
-		Context: ctx,
 		KafkaUrl: kafkaUrl,
 	}
 }
 
-func (producer *Producer) Produce(topic, message, key string) error {
+func (producer *Producer) Produce(topic, message, key string, ctx context.Context) error {
 	writer := kafka.Writer{
 		Addr:     kafka.TCP(producer.KafkaUrl),
 		Topic:   topic,
@@ -30,7 +28,7 @@ func (producer *Producer) Produce(topic, message, key string) error {
 	var err error
 	const retries = 3
 	for i := 0; i < retries; i++ {
-		ctx, cancel := context.WithTimeout(producer.Context, 10*time.Second)
+		ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 		defer cancel()
 		err = writer.WriteMessages(ctx, kafka.Message{
 			Key: []byte(key),
