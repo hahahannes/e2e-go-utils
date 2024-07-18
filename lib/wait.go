@@ -62,6 +62,7 @@ func WaitForMessageReceived[T any] (ctx context.Context, sendFnc func(context.Co
 				Message: "sendFnc errored",
 				Error: err,
 			}
+			fmt.Println("Cancel the waiting loop")
 			cancel()
 			return
 		}

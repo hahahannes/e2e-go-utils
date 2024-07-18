@@ -24,9 +24,7 @@ func NewLogConsumer() *LogConsumer {
 }
 
 func WaitForContainerLog(ctx context.Context, regexMsg string, sendFnc func(context.Context) error, logConsumer *LogConsumer, logMessages bool) (lib.MessageReceived, error) {
-	return lib.WaitForMessageReceived[string](ctx, func(context.Context) error {
-		return sendFnc(ctx)
-	}, logConsumer.LogChannel, func (log any) (error, bool) {
+	return lib.WaitForMessageReceived[string](ctx, sendFnc, logConsumer.LogChannel, func (log any) (error, bool) {
 		msgMatch, err := regexp.MatchString(regexMsg, log.(string))
 		return err, msgMatch
 	}, logMessages)
