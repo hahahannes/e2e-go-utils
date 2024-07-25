@@ -44,7 +44,7 @@ func WaitForMessageReceived[T any] (ctx context.Context, sendFnc func(context.Co
 			case <- subCtx.Done(): 
 				resultChannel <- MessageReceived{
 					Received: false,
-					Error: fmt.Errorf("Wait loop finished due to Context: %w", subCtx.Err()),
+					Message: fmt.Sprintf("Wait loop finished due to Context: %s", subCtx.Err()),
 				}
 				return
 			}		
